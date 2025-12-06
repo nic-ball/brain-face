@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import Particles from "react-particles-js";
-import Clarifai from "clarifai";
+import Particles from "react-tsparticles";
+import { loadFull } from "tsparticles";
 import Navigation from "./components/Navigation/Navigation";
 import SignIn from "./components/SignIn/SignIn";
 import Register from "./components/Register/Register";
@@ -9,10 +9,6 @@ import Rank from "./components/Rank/Rank";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import "./App.css";
-
-const app = new Clarifai.App({
-  apiKey: "70f55b96a4064380b835705dca0ee9ab"
-});
 
 const particleOptions = {
   particles: {
@@ -45,6 +41,10 @@ class App extends Component {
     };
   }
 
+  particlesInit = async (engine) => {
+    await loadFull(engine);
+  };
+
   loadUser = data => {
     this.setState({
       user: {
@@ -58,8 +58,12 @@ class App extends Component {
   };
 
   calculateFaceLocation = data => {
-    const clarifaiFace =
-      data.outputs[0].data.regions[0].region_info.bounding_box;
+    // Check if we have valid region data, otherwise return empty
+    if (!data || !data.outputs) return {};
+
+    // For mock mode, we might just return a fixed box or random box if "data" is not real API response
+    // But since we are mocking the entire response flow in onButtonSubmit, we expect 'clarifaiFace' structure
+    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
     const image = document.getElementById("inputImage");
     const width = Number(image.width);
     const height = Number(image.height);
@@ -82,12 +86,35 @@ class App extends Component {
 
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    app.models
-      .predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-      .then(response =>
-        this.displayFaceBox(this.calculateFaceLocation(response))
-      )
-      .catch(err => console.log(err));
+
+    // Mock API Response for Demo
+    // Generates a random face box around the center of the image
+    const mockResponse = {
+      outputs: [
+        {
+          data: {
+            regions: [
+              {
+                region_info: {
+                  bounding_box: {
+                    top_row: 0.2, // ~20% from top
+                    left_col: 0.3, // ~30% from left
+                    bottom_row: 0.6,
+                    right_col: 0.7
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    };
+
+    // Simulate API delay
+    setTimeout(() => {
+      this.setState(Object.assign(this.state.user, { entries: this.state.user.entries + 1 }));
+      this.displayFaceBox(this.calculateFaceLocation(mockResponse));
+    }, 500);
   };
 
   onRouteChange = route => {
@@ -103,7 +130,12 @@ class App extends Component {
     const { isSignedIn, imageUrl, route, box } = this.state;
     return (
       <div className="App">
-        <Particles className="particles" params={particleOptions} />
+        <Particles
+          className="particles"
+          id="tsparticles"
+          init={this.particlesInit}
+          options={particleOptions}
+        />
         <Navigation
           isSignedIn={isSignedIn}
           onRouteChange={this.onRouteChange}
