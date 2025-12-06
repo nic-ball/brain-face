@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/brain-face/static/css/main.40f9769f.css",
+    "main.js": "/brain-face/static/js/main.15e13540.js",
+    "index.html": "/brain-face/index.html",
+    "main.40f9769f.css.map": "/brain-face/static/css/main.40f9769f.css.map",
+    "main.15e13540.js.map": "/brain-face/static/js/main.15e13540.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40f9769f.css",
+    "static/js/main.15e13540.js"
+  ]
+}
